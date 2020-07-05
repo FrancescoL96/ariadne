@@ -108,21 +108,26 @@ else()
     message(WARNING "Unable to find Cairo. You will not be able to use graphics.")
 endif()
 
+include("./cmake/FindCUDA.cmake")
+
 configure_file(${PROJECT_SOURCE_DIR}/cmake/config.hpp.cmake ${PROJECT_SOURCE_DIR}/source/config.hpp)
 
 include_directories(${PROJECT_SOURCE_DIR}/source)
 
 find_package(Kirk)
 
+#[[ This section has been commented out because otherwise this flag gets used for NVCC as well as the CXX compiler, which leads to a fatal error
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   add_definitions(-Wno-non-template-friend)
 endif()
+]]
 
+# Inside the "source" CMAKE, a sub_directory(cuda) has been added
 add_subdirectory(source)
-add_subdirectory(tests)
-add_subdirectory(examples)
-add_subdirectory(tutorials)
-add_subdirectory(experimental EXCLUDE_FROM_ALL)
+#add_subdirectory(tests)
+#add_subdirectory(examples)
+#add_subdirectory(tutorials)
+#add_subdirectory(experimental EXCLUDE_FROM_ALL)
 
 find_package(PythonLibs)
 if(PYTHONLIBS_FOUND)
@@ -208,6 +213,13 @@ endif()
 if(CAIRO_FOUND)
     target_link_libraries(ariadne ${CAIRO_LIBRARIES})
     target_link_libraries(ariadne-kernel ${CAIRO_LIBRARIES})
+endif()
+
+# Ariadne gets linked to the Cuda code inside the "source/cuda" folder
+if (CMAKE_CUDA_COMPILER)
+    target_link_libraries(ariadne ariadne-cuda)
+    target_link_libraries(ariadne-kernel ariadne-cuda)
+    target_link_libraries(ariadne-core ariadne-cuda)
 endif()
 
 install(TARGETS ariadne DESTINATION lib)
