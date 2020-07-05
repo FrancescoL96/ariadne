@@ -28,6 +28,8 @@
 #include "../algebra/expansion.inl.hpp"
 #include "inclusion_evolver.hpp"
 
+#include "../cuda/include/cuda_lib.hpp"
+
 namespace Ariadne {
 /*
 FloatDP volume(Vector<IntervalValidatedRangeType> const& box) {
@@ -334,6 +336,14 @@ ValidatedVectorMultivariateFunctionModelDP LohnerReconditioner::incorporate_erro
     ValidatedVectorMultivariateFunctionModelDP result = embed(f,errors)+embed(domain,error_function);
     for(SizeType i=0; i!=result.result_size(); ++i) { result[i].clobber(); }
     return result;
+}
+
+Void call_function_cuda() {
+    #ifdef HAVE_CUDA_H
+    function();
+    #else
+    printf("pizza");
+    #endif
 }
 
 Void LohnerReconditioner::reduce_parameters(ValidatedVectorMultivariateFunctionModelDP& f) const {
