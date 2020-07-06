@@ -338,11 +338,36 @@ ValidatedVectorMultivariateFunctionModelDP LohnerReconditioner::incorporate_erro
     return result;
 }
 
-Void call_function_cuda() {
+Void call_function_cuda(const int N) {
+
+    int* h_matrixA = new int[N * N];
+    int* h_matrixB = new int[N * N];
+    int* h_matrixC = new int[N * N];
+
+    for (int i = 0; i < N * N; i++) {
+        h_matrixA[i] = i;
+        h_matrixB[i] = i+1;
+    }
     #ifdef HAVE_CUDA_H
-    function();
+    function(N, h_matrixA, h_matrixB, h_matrixC);
     #else
-    printf("pizza");
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            int sum = 0;
+            for (int k = 0; k < N; k++)
+                 sum += h_matrixA[i * N + k] * h_matrixB[k * N + j];
+            h_matrixC[i * N + j] = sum;
+        }
+    }
+
+    std::cout << "CPU: " << std::endl;
+    for (int i = 0; i < N * N; i++){
+        if (i % N == 0){
+            std::cout << std::endl;
+        }
+        std::cout << h_matrixC[i] << " ";
+    }
+    std::cout << std::endl;
     #endif
 }
 

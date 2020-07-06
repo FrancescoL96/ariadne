@@ -68,7 +68,7 @@ BoxDomainType initial_ranges_to_box(RealVariablesBox const& var_ranges);
 
 FloatDP volume(Vector<ApproximateIntervalType> const& box);
 
-Void call_function_cuda();
+Void call_function_cuda(const int N);
 
 class InclusionEvolverState;
 
