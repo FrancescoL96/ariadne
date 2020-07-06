@@ -14,5 +14,6 @@
 
 #cmakedefine HAVE_GMPXX_H
 #cmakedefine HAVE_CAIRO_H
+#cmakedefine HAVE_CUDA_H
 
 #endif /* ARIADNE_CONFIG_HPP */

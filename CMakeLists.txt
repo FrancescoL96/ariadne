@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.9)
 message(STATUS "CMake version ${CMAKE_VERSION}")
 
 project(Ariadne VERSION 2.0)
+include("./cmake/FindCUDA.cmake")
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
   message(WARNING "Intel compiler not supported.")
@@ -19,6 +20,8 @@ set(BUILD_SHARED_LIBS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_subdirectory(source/cuda)
 
 foreach(WARN ${COMPILER_WARN})
     add_compile_options(-W${WARN})
@@ -42,7 +45,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     add_compile_options(-fdiagnostics-color=always)
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-fcolor-diagnostics)
-endif ()
+endif()
 
 option(COVERAGE "Enable coverage reporting" OFF)
 add_library(coverage_config INTERFACE)
@@ -210,6 +213,12 @@ endif()
 if(CAIRO_FOUND)
     target_link_libraries(ariadne ${CAIRO_LIBRARIES})
     target_link_libraries(ariadne-kernel ${CAIRO_LIBRARIES})
+endif()
+
+if (CMAKE_CUDA_COMPILER)
+    target_link_libraries(ariadne ariadne-cuda)
+    target_link_libraries(ariadne-kernel ariadne-cuda)
+    target_link_libraries(ariadne-core ariadne-cuda)
 endif()
 
 install(TARGETS ariadne DESTINATION lib)
