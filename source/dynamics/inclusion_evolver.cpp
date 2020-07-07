@@ -343,7 +343,7 @@ Void call_function_cuda(const int N) {
         h_matrixB[i] = i+1;
     }
     #ifdef HAVE_CUDA_H
-    function(N, h_matrixA, h_matrixB, h_matrixC);
+    ariadne_cuda::function(N, h_matrixA, h_matrixB, h_matrixC);
     #else
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {

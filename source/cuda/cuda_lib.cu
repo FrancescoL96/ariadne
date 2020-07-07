@@ -22,7 +22,7 @@ void matrixMultiplicationKernel(const int* d_matrixA,
     }
 }
 
-void function(const int N, int * h_matrixA, int * h_matrixB, int * h_matrixC) {
+void ariadne_cuda::function(const int N, int * h_matrixA, int * h_matrixB, int * h_matrixC) {
     int *d_matrixA, *d_matrixB, *d_matrixC;
     cudaMalloc( &d_matrixA, N*N * sizeof(int) );
     cudaMalloc( &d_matrixB, N*N * sizeof(int) );

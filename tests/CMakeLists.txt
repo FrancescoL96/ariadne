@@ -12,3 +12,7 @@ add_subdirectory(solvers)
 add_subdirectory(output)
 add_subdirectory(dynamics)
 add_subdirectory(hybrid)
+
+if (CMAKE_CUDA_COMPILER)
+    add_subdirectory(cuda)
+endif()
