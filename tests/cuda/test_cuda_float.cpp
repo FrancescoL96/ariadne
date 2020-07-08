@@ -23,72 +23,74 @@
  */
 
 #include "config.hpp"
-
 #include "function/procedure.hpp"
 #include "function/procedure.tpl.hpp"
 
+#include "../test.hpp"
 #include "cuda/cuda_lib.hpp"
 
-#include "../test.hpp"
+#define ADD 0
+#define SUB 1
+#define MUL 2
+#define DIV 3
+
+#define round_up 0
+#define round_down 1
+#define round_to_nearest 2
+#define round_toward_zero 3
 
 using namespace std;
 using namespace Ariadne;
 
 template<class X> decltype(auto) mag(Covector<X> const& u) { return norm(transpose(u)); }
 
-class TestCudaProcedure
+class TestCudaFloat
 {
   public:
-    TestCudaProcedure();
+    TestCudaFloat();
     Void test();
   private:
-    Void test_matrix_moltiplication();
+    Void test_cuda_rounding();
 };
 
-TestCudaProcedure::TestCudaProcedure()
+TestCudaFloat::TestCudaFloat()
 {
 }
 
-Void TestCudaProcedure::test()
+Void TestCudaFloat::test()
 {
-    ARIADNE_TEST_CALL(test_matrix_moltiplication());
+  std::cout<<std::setprecision(20);
+  ARIADNE_TEST_CALL(test_cuda_rounding());
 }
 
-Void TestCudaProcedure::test_matrix_moltiplication()
-{
-    int N = 5;
-    int* h_matrixA = new int[N * N];
-    int* h_matrixB = new int[N * N];
-    int* h_matrixC = new int[N * N];
-    int* h_matrixC_host = new int[N * N];
+Void TestCudaFloat::test_cuda_rounding()
+{   
 
-    for (int i = 0; i < N * N; i++) {
-        h_matrixA[i] = i;
-        h_matrixB[i] = i+1;
-    }
+  volatile double one   = 1;
+  volatile double two_  = 2;
+  volatile double three = 3;
+  volatile double five  = 5;
 
-    ariadne_cuda::function(N, h_matrixA, h_matrixB, h_matrixC);
-    
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            int sum = 0;
-            for (int k = 0; k < N; k++)
-                 sum += h_matrixA[i * N + k] * h_matrixB[k * N + j];
-            h_matrixC_host[i * N + j] = sum;
-        }
-    }
-    for (int i = 0; i < N * N; i++) {
-        if (h_matrixC_host[i] != h_matrixC[i]) {
-            ARIADNE_TEST_FAILURES++;
-        }
-    }
+  const double onethirddown    = 0.33333333333333331483;
+  const double onethirdup      = 0.33333333333333337034;
+  const double onethirdchop    = 0.33333333333333331483;
+  const double onethirdnearest = 0.33333333333333331483;
+  const double twofifthsdown   = 0.39999999999999996669;
+  const double twofifthsup     = 0.40000000000000002220;
+  const double twofifthschop   = 0.39999999999999996669;
+  const double twofifthsnearest= 0.40000000000000002220;
+
+  double result = ariadne_cuda::double_approximation(one, three, DIV, round_down);
+  ARIADNE_TEST_EQUAL(result, onethirddown);
+  result = ariadne_cuda::double_approximation(one, three, DIV, round_up);
+  ARIADNE_TEST_EQUAL(result, onethirdup);
 
 }
 
 
 
 Int main() {
-    TestCudaProcedure().test();
+    TestCudaFloat().test();
     return ARIADNE_TEST_FAILURES;
 }
 

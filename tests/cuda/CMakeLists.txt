@@ -1,5 +1,6 @@
 set(UNIT_TESTS
     test_cuda_procedure
+    test_cuda_float
 )
 
 foreach(TEST ${UNIT_TESTS})
