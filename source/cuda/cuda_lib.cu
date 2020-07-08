@@ -112,7 +112,7 @@ float ariadne_cuda::float_approximation (float first_value, float second_value, 
     cudaMemcpy(res_h, res_d, sizeof(float), cudaMemcpyDeviceToHost);
     cudaFree(res_d);
 
-    switch (operation) {
+    switch (rounding) {
         case round_down:
             
             break;
@@ -140,7 +140,7 @@ double ariadne_cuda::double_approximation (double first_value, double second_val
     cudaMemcpy(res_h, res_d, sizeof(double), cudaMemcpyDeviceToHost);
     cudaFree(res_d);
 
-    switch (operation) {
+    switch (rounding) {
         case round_down:
             
             break;
