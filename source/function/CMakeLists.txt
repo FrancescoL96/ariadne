@@ -11,7 +11,7 @@ add_library(ariadne-function OBJECT
     taylor_function.cpp
 )
 
-cotire(ariadne-function CONFIGURATIONS None)
+#cotire(ariadne-function CONFIGURATIONS None)
 
 if(COVERAGE)
     target_link_libraries(ariadne-function PUBLIC coverage_config)

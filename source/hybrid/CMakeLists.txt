@@ -12,7 +12,7 @@ add_library(ariadne-hybrid OBJECT
     hybrid_graphics.cpp
 )
 
-cotire(ariadne-hybrid CONFIGURATIONS None)
+#cotire(ariadne-hybrid CONFIGURATIONS None)
 
 if(COVERAGE)
     target_link_libraries(ariadne-hybrid PUBLIC coverage_config)

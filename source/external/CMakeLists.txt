@@ -4,7 +4,7 @@ endif()
 
 if (${EXTERNAL_SRC})
     add_library(ariadne-external SHARED ${EXTERNAL_SRC})
-    cotire(ariadne-external CONFIGURATIONS None)
+    #cotire(ariadne-external CONFIGURATIONS None)
     target_link_libraries(ariadne-external ariadne)
     if(COVERAGE)
         target_link_libraries(ariadne-external PUBLIC coverage_config)

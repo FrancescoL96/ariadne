@@ -9,7 +9,7 @@ add_library(ariadne-dynamics OBJECT
     reachability_analyser.cpp
 )
 
-cotire(ariadne-dynamics CONFIGURATIONS None)
+#cotire(ariadne-dynamics CONFIGURATIONS None)
 
 if(COVERAGE)
     target_link_libraries(ariadne-dynamics PUBLIC coverage_config)

@@ -13,7 +13,7 @@ add_library(ariadne-geometry OBJECT
     geometry.cpp
 )
 
-cotire(ariadne-geometry CONFIGURATIONS None)
+#cotire(ariadne-geometry CONFIGURATIONS None)
 
 if(COVERAGE)
     target_link_libraries(ariadne-geometry PUBLIC coverage_config)

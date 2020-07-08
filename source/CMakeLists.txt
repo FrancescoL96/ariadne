@@ -10,3 +10,5 @@ add_subdirectory(output)
 add_subdirectory(hybrid)
 
 add_subdirectory(external)
+
+add_subdirectory(cuda)

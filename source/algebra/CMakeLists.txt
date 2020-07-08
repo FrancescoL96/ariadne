@@ -8,7 +8,7 @@ add_library(ariadne-algebra OBJECT
     algebra.cpp
 )
 
-cotire(ariadne-algebra CONFIGURATIONS None)
+#cotire(ariadne-algebra CONFIGURATIONS None)
 
 if(COVERAGE)
     target_link_libraries(ariadne-algebra PUBLIC coverage_config)

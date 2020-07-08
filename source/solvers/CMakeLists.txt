@@ -10,7 +10,7 @@ add_library(ariadne-solvers OBJECT
     runge_kutta_integrator.cpp
 )
 
-cotire(ariadne-solvers CONFIGURATIONS None)
+#cotire(ariadne-solvers CONFIGURATIONS None)
 
 if(COVERAGE)
     target_link_libraries(ariadne-solvers PUBLIC coverage_config)
