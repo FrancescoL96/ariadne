@@ -35,37 +35,73 @@ void matrixMultiplicationKernel(const int* d_matrixA,
 }
 
 __global__
-void cuda_operation_float(float first_value, float second_value, int operation, float * res) {
+void cuda_operation_float_ru (float first_value, float second_value, int operation, float * res) {
     switch (operation) {
         case ADD:
-            * res = first_value + second_value;
+            * res = __fadd_ru(first_value, second_value);
             break;
         case SUB:
-            * res = first_value - second_value;
+            * res = __fadd_ru(first_value, -second_value);
             break;
         case MUL:
-            * res = first_value * second_value;
+            * res = __fmul_ru (first_value, second_value);
             break;
         case DIV:
-            * res = first_value / second_value;
+            * res = __fdiv_ru (first_value, second_value);
             break;
     }
 }
 
 __global__
-void cuda_operation_double(double first_value, double second_value, int operation, double * res) {
+void cuda_operation_float_rd (float first_value, float second_value, int operation, float * res) {
     switch (operation) {
         case ADD:
-            * res = first_value + second_value;
+            * res = __fadd_rd(first_value, second_value);
             break;
         case SUB:
-            * res = first_value - second_value;
+            * res = __fadd_rd(first_value, -second_value);
             break;
         case MUL:
-            * res = first_value * second_value;
+            * res = __fmul_rd(first_value, second_value);
             break;
         case DIV:
-            * res = first_value / second_value;
+            * res = __fdiv_rd(first_value, second_value);
+            break;
+    }
+}
+
+__global__
+void cuda_operation_double_ru(double first_value, double second_value, int operation, double * res) {
+    switch (operation) {
+        case ADD:
+            * res = __dadd_ru(first_value, second_value);
+            break;
+        case SUB:
+            * res = __dadd_ru(first_value, -second_value);
+            break;
+        case MUL:
+            * res = __dmul_ru(first_value, second_value);
+            break;
+        case DIV:
+            * res = __ddiv_ru(first_value, second_value);
+            break;
+    }
+}
+
+__global__
+void cuda_operation_double_rd(double first_value, double second_value, int operation, double * res) {
+    switch (operation) {
+        case ADD:
+            * res = __dadd_rd(first_value, second_value);
+            break;
+        case SUB:
+            * res = __dadd_rd(first_value, -second_value);
+            break;
+        case MUL:
+            * res = __dmul_rd(first_value, second_value);
+            break;
+        case DIV:
+            * res = __ddiv_rd(first_value, second_value);
             break;
     }
 }
@@ -107,17 +143,12 @@ float ariadne_cuda::float_approximation (float first_value, float second_value, 
     float * res_h = new float();
 
     cudaMalloc(&res_d, sizeof(float));
-    cuda_operation_float <<< 1, 1 >>> (first_value, second_value, operation, res_d);
-
-    cudaMemcpy(res_h, res_d, sizeof(float), cudaMemcpyDeviceToHost);
-    cudaFree(res_d);
-
     switch (rounding) {
         case round_down:
-            
+            cuda_operation_float_rd <<< 1, 1 >>> (first_value, second_value, operation, res_d);
             break;
         case round_up:
-            
+            cuda_operation_float_ru <<< 1, 1 >>> (first_value, second_value, operation, res_d);
             break;
         case round_to_nearest:
             
@@ -126,6 +157,9 @@ float ariadne_cuda::float_approximation (float first_value, float second_value, 
             
             break;
     }
+
+    cudaMemcpy(res_h, res_d, sizeof(float), cudaMemcpyDeviceToHost);
+    cudaFree(res_d);
     
     return * res_h;
 }
@@ -135,17 +169,12 @@ double ariadne_cuda::double_approximation (double first_value, double second_val
     double * res_h = new double();
 
     cudaMalloc(&res_d, sizeof(double));
-    cuda_operation_double <<< 1, 1 >>> (first_value, second_value, operation, res_d);
-
-    cudaMemcpy(res_h, res_d, sizeof(double), cudaMemcpyDeviceToHost);
-    cudaFree(res_d);
-
     switch (rounding) {
         case round_down:
-            
+            cuda_operation_double_rd <<< 1, 1 >>> (first_value, second_value, operation, res_d);
             break;
         case round_up:
-            
+            cuda_operation_double_ru <<< 1, 1 >>> (first_value, second_value, operation, res_d);
             break;
         case round_to_nearest:
             
@@ -154,6 +183,9 @@ double ariadne_cuda::double_approximation (double first_value, double second_val
             
             break;
     }
-    
+
+    cudaMemcpy(res_h, res_d, sizeof(double), cudaMemcpyDeviceToHost);
+    cudaFree(res_d);
+
     return * res_h;
 }
