@@ -38,9 +38,9 @@ add_library(pyariadne-module-obj OBJECT
     ariadne_module.cpp
 )
 
-cotire(pyariadne-numeric-submodule-obj CONFIGURATIONS None)
-cotire(pyariadne-algebra-submodule-obj CONFIGURATIONS None)
-cotire(pyariadne-extra-submodule-obj CONFIGURATIONS None)
+#cotire(pyariadne-numeric-submodule-obj CONFIGURATIONS None)
+#cotire(pyariadne-algebra-submodule-obj CONFIGURATIONS None)
+#cotire(pyariadne-extra-submodule-obj CONFIGURATIONS None)
 
 if(COVERAGE)
     target_link_libraries(pyariadne-numeric-submodule-obj PUBLIC coverage_config)
