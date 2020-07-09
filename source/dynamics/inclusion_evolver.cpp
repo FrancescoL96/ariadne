@@ -29,8 +29,6 @@
 #include "../output/progress_indicator.hpp"
 #include "inclusion_evolver.hpp"
 
-#include "../cuda/cuda_lib.hpp"
-
 namespace Ariadne {
 /*
 FloatDP volume(Vector<IntervalValidatedRangeType> const& box) {
@@ -330,39 +328,6 @@ ValidatedVectorMultivariateFunctionModelDP LohnerReconditioner::incorporate_erro
     ValidatedVectorMultivariateFunctionModelDP result = embed(f,errors)+embed(domain,error_function);
     for(SizeType i=0; i!=result.result_size(); ++i) { result[i].clobber(); }
     return result;
-}
-
-Void call_function_cuda(const int N) {
-
-    int* h_matrixA = new int[N * N];
-    int* h_matrixB = new int[N * N];
-    int* h_matrixC = new int[N * N];
-
-    for (int i = 0; i < N * N; i++) {
-        h_matrixA[i] = i;
-        h_matrixB[i] = i+1;
-    }
-    #ifdef HAVE_CUDA_H
-    ariadne_cuda::function(N, h_matrixA, h_matrixB, h_matrixC);
-    #else
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            int sum = 0;
-            for (int k = 0; k < N; k++)
-                 sum += h_matrixA[i * N + k] * h_matrixB[k * N + j];
-            h_matrixC[i * N + j] = sum;
-        }
-    }
-
-    std::cout << "CPU: " << std::endl;
-    for (int i = 0; i < N * N; i++){
-        if (i % N == 0){
-            std::cout << std::endl;
-        }
-        std::cout << h_matrixC[i] << " ";
-    }
-    std::cout << std::endl;
-    #endif
 }
 
 Void LohnerReconditioner::reduce_parameters(ValidatedVectorMultivariateFunctionModelDP& f) const {
