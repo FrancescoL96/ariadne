@@ -53,6 +53,7 @@ before_install:
       if [[ -z "$DISABLE_CAIRO" ]]; then CAIRO_PKG=cairo; else CAIRO_PKG=""; fi
       brew install gcc@8 python3 mpfr gmp $CAIRO_PKG
       brew postinstall python3
+      hash -r
       export PKG_CONFIG_PATH=/usr/local/opt/libffi/lib/pkgconfig
       sudo pip3 install --upgrade pip
       sudo pip3 install coverage pytest
