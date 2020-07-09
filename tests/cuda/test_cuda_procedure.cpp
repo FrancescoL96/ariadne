@@ -56,7 +56,7 @@ Void TestCudaProcedure::test()
 
 Void TestCudaProcedure::test_matrix_moltiplication()
 {
-    int N = 5;
+    const int N = 5;
     int* h_matrixA = new int[N * N];
     int* h_matrixB = new int[N * N];
     int* h_matrixC = new int[N * N];
