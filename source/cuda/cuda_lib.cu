@@ -1,8 +1,11 @@
 #include <iostream>
+#include <cassert>
 #include <cuda.h>
 #include <math.h>
 
 #include "./cuda_lib.hpp"
+#include "CheckError.i.cuh"
+#include "CheckError.cuh"
 
 #define ADD 0
 #define SUB 1
@@ -108,12 +111,12 @@ void cuda_operation_double_rd(double first_value, double second_value, int opera
 
 void ariadne_cuda::function(const int N, int * h_matrixA, int * h_matrixB, int * h_matrixC) {
     int *d_matrixA, *d_matrixB, *d_matrixC;
-    cudaMalloc( &d_matrixA, N*N * sizeof(int) );
-    cudaMalloc( &d_matrixB, N*N * sizeof(int) );
-    cudaMalloc( &d_matrixC, N*N * sizeof(int) );
+    SAFE_CALL(cudaMalloc( &d_matrixA, N*N * sizeof(int) ));
+    SAFE_CALL(cudaMalloc( &d_matrixB, N*N * sizeof(int) ));
+    SAFE_CALL(cudaMalloc( &d_matrixC, N*N * sizeof(int) ));
 
-    cudaMemcpy( d_matrixA, h_matrixA, N*N * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy( d_matrixB, h_matrixB, N*N * sizeof(int), cudaMemcpyHostToDevice);
+    SAFE_CALL(cudaMemcpy( d_matrixA, h_matrixA, N*N * sizeof(int), cudaMemcpyHostToDevice));
+    SAFE_CALL(cudaMemcpy( d_matrixB, h_matrixB, N*N * sizeof(int), cudaMemcpyHostToDevice));
 
     dim3 DimGrid(N/BLOCK_SIZE_X, N/BLOCK_SIZE_Y, 1);
     if (N%BLOCK_SIZE_X) DimGrid.x++;
@@ -121,8 +124,9 @@ void ariadne_cuda::function(const int N, int * h_matrixA, int * h_matrixB, int *
     dim3 DimBlock(BLOCK_SIZE_X, BLOCK_SIZE_Y, 1);
     
     matrixMultiplicationKernel<<< DimGrid,DimBlock>>> (d_matrixA, d_matrixB, N, d_matrixC);
+    CHECK_CUDA_ERROR
 
-    cudaMemcpy( h_matrixC, d_matrixC, N*N * sizeof(int), cudaMemcpyDeviceToHost);
+    SAFE_CALL(cudaMemcpy( h_matrixC, d_matrixC, N*N * sizeof(int), cudaMemcpyDeviceToHost));
 
     std::cout << "GPU: " << std::endl;
     for (int i = 0; i < N * N; i++){
@@ -133,16 +137,16 @@ void ariadne_cuda::function(const int N, int * h_matrixA, int * h_matrixB, int *
     }
     std::cout << std::endl;
 
-    cudaFree(&d_matrixA);
-    cudaFree(&d_matrixB);
-    cudaFree(&d_matrixC);
+    SAFE_CALL(cudaFree(&d_matrixA));
+    SAFE_CALL(cudaFree(&d_matrixB));
+    SAFE_CALL(cudaFree(&d_matrixC));
 }
 
 float ariadne_cuda::float_approximation (float first_value, float second_value, int operation, int rounding) {
     float * res_d;
     float * res_h = new float();
 
-    cudaMalloc(&res_d, sizeof(float));
+    SAFE_CALL(cudaMalloc(&res_d, sizeof(float)));
     switch (rounding) {
         case round_down:
             cuda_operation_float_rd <<< 1, 1 >>> (first_value, second_value, operation, res_d);
@@ -157,9 +161,10 @@ float ariadne_cuda::float_approximation (float first_value, float second_value, 
             
             break;
     }
+    CHECK_CUDA_ERROR
 
-    cudaMemcpy(res_h, res_d, sizeof(float), cudaMemcpyDeviceToHost);
-    cudaFree(res_d);
+    SAFE_CALL(cudaMemcpy(res_h, res_d, sizeof(float), cudaMemcpyDeviceToHost));
+    SAFE_CALL(cudaFree(res_d));
     
     return * res_h;
 }
@@ -168,7 +173,7 @@ double ariadne_cuda::double_approximation (double first_value, double second_val
     double * res_d;
     double * res_h = new double();
 
-    cudaMalloc(&res_d, sizeof(double));
+    SAFE_CALL(cudaMalloc(&res_d, sizeof(double)));
     switch (rounding) {
         case round_down:
             cuda_operation_double_rd <<< 1, 1 >>> (first_value, second_value, operation, res_d);
@@ -183,9 +188,9 @@ double ariadne_cuda::double_approximation (double first_value, double second_val
             
             break;
     }
-
-    cudaMemcpy(res_h, res_d, sizeof(double), cudaMemcpyDeviceToHost);
-    cudaFree(res_d);
+    CHECK_CUDA_ERROR
+    SAFE_CALL(cudaMemcpy(res_h, res_d, sizeof(double), cudaMemcpyDeviceToHost));
+    SAFE_CALL(cudaFree(res_d));
 
     return * res_h;
 }
