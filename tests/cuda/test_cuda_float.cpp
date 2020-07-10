@@ -67,23 +67,45 @@ Void TestCudaFloat::test_cuda_rounding()
 {   
 
   volatile double one   = 1;
-  volatile double two_  = 2;
+  volatile double two  = 2;
   volatile double three = 3;
   volatile double five  = 5;
 
   const double onethirddown    = 0.33333333333333331483;
   const double onethirdup      = 0.33333333333333337034;
-  const double onethirdchop    = 0.33333333333333331483;
-  const double onethirdnearest = 0.33333333333333331483;
+  // This value are not used because this type of ruonding is not implemented
+  //const double onethirdchop    = 0.33333333333333331483;
+  //const double onethirdnearest = 0.33333333333333331483;
   const double twofifthsdown   = 0.39999999999999996669;
   const double twofifthsup     = 0.40000000000000002220;
-  const double twofifthschop   = 0.39999999999999996669;
-  const double twofifthsnearest= 0.40000000000000002220;
+  //const double twofifthschop   = 0.39999999999999996669;
+  //const double twofifthsnearest= 0.40000000000000002220;
 
   double result = ariadne_cuda::double_approximation(one, three, DIV, round_down);
   ARIADNE_TEST_EQUAL(result, onethirddown);
   result = ariadne_cuda::double_approximation(one, three, DIV, round_up);
   ARIADNE_TEST_EQUAL(result, onethirdup);
+
+  /*
+    NOT IMPLEMENTED -- ROUNDING "toward_zero", ROUNDING "round_to_nearest"
+  result = ariadne_cuda::double_approximation(one, three, DIV, toward_zero);
+  ARIADNE_TEST_EQUAL(result, onethirdchop);
+  result = ariadne_cuda::double_approximation(one, three, DIV, round_to_nearest);
+  ARIADNE_TEST_EQUAL(result, onethirdnearest);
+  */
+
+  result = ariadne_cuda::double_approximation(two, five, DIV, round_down);
+  ARIADNE_TEST_EQUAL(result, twofifthsdown);
+  result = ariadne_cuda::double_approximation(two, five, DIV, round_up);
+  ARIADNE_TEST_EQUAL(result, twofifthsup);
+
+  /*
+    NOT IMPLEMENTED -- ROUNDING "toward_zero", ROUNDING "round_to_nearest"
+  result = ariadne_cuda::double_approximation(two, five, DIV, toward_zero);
+  ARIADNE_TEST_EQUAL(result, twofifthschop);
+  result = ariadne_cuda::double_approximation(two, five, DIV, round_to_nearest);
+  ARIADNE_TEST_EQUAL(result, twofifthsnearest);
+  */
 
 }
 
