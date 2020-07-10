@@ -136,9 +136,9 @@ void ariadne_cuda::function(const int N, int * h_matrixA, int * h_matrixB, int *
     }
     std::cout << std::endl;
 
-    SAFE_CALL(cudaFree(&d_matrixA));
-    SAFE_CALL(cudaFree(&d_matrixB));
-    SAFE_CALL(cudaFree(&d_matrixC));
+    SAFE_CALL(cudaFree(d_matrixA));
+    SAFE_CALL(cudaFree(d_matrixB));
+    SAFE_CALL(cudaFree(d_matrixC));
 }
 
 float ariadne_cuda::float_approximation (float first_value, float second_value, int operation, int rounding) {
