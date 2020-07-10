@@ -4,7 +4,6 @@
 #include <math.h>
 
 #include "./cuda_lib.hpp"
-#include "CheckError.i.cuh"
 #include "CheckError.cuh"
 
 #define ADD 0
