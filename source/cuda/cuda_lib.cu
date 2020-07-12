@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cassert>
 #include <cuda.h>
 #include <math.h>
 

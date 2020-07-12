@@ -221,7 +221,7 @@ if(CAIRO_FOUND)
     target_link_libraries(ariadne-kernel ${CAIRO_LIBRARIES})
 endif()
 
-if (CMAKE_CUDA_COMPILER)
+if (CUDA_FOUND)
     target_link_libraries(ariadne ariadne-cuda)
     target_link_libraries(ariadne-kernel ariadne-cuda)
     target_link_libraries(ariadne-core ariadne-cuda)

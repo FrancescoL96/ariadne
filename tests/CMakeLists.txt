@@ -13,6 +13,6 @@ add_subdirectory(output)
 add_subdirectory(dynamics)
 add_subdirectory(hybrid)
 
-if (CMAKE_CUDA_COMPILER)
+if (CUDA_FOUND)
     add_subdirectory(cuda)
 endif()
