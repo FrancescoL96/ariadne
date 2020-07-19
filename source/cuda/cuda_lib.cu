@@ -192,3 +192,8 @@ double ariadne_cuda::double_approximation (double first_value, double second_val
 
     return * res_h;
 }
+
+void ariadne_cuda::_ifma(std::vector < int* >& r_index_vector, std::vector < double >& r_value_vecto, int r_size, 
+    std::vector < int* >& y_index_vector, std::vector < double >& y_value_vecto, int y_size) {
+    return;
+}
