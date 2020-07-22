@@ -15,8 +15,8 @@
 #define round_to_nearest 2
 #define round_toward_zero 3
 
-const int BLOCK_SIZE_X = 16;
-const int BLOCK_SIZE_Y = 16;
+const int BLOCK_SIZE_X = 1;
+const int BLOCK_SIZE_Y = 1;
 
 __global__
 void matrixMultiplicationKernel(const int* d_matrixA,
@@ -215,7 +215,7 @@ __global__
 void sum_index (int * x_index_vector, int * y_index_matrix, int ya_len, int y_size) {
     int row = blockIdx.y*blockDim.y + threadIdx.y;
     int col = blockIdx.x*blockDim.x + threadIdx.x;
-    y_index_matrix[row * y_size + col] += x_index_vector[col];
+    y_index_matrix[row * ya_len + col] += x_index_vector[col];
 }
 
 /* Note:
@@ -234,8 +234,13 @@ void mul_value (double x_value, double x_value_neg, double * y_value_vector, int
 
 void ariadne_cuda::_ifma(int *x_index_vector, double x_value, double x_value_neg, 
     int *y_index_matrix, double *y_value_vector, int ya_len, int y_size, double * error)
-{
-    sum_index <<< ya_len, y_size >>> (x_index_vector, y_index_matrix, ya_len, y_size);
+{    
+    dim3 DimGrid(ya_len/BLOCK_SIZE_X, y_size/BLOCK_SIZE_Y, 1);
+    if (ya_len%BLOCK_SIZE_X) DimGrid.x++;
+    if (y_size%BLOCK_SIZE_Y) DimGrid.y++;
+    dim3 DimBlock(BLOCK_SIZE_X, BLOCK_SIZE_Y, 1);
+
+    sum_index <<< DimGrid,DimBlock >>> (x_index_vector, y_index_matrix, ya_len, y_size);
     mul_value <<< 1, y_size >>> (x_value, x_value_neg, y_value_vector, y_size, error);
     CHECK_CUDA_ERROR
 }

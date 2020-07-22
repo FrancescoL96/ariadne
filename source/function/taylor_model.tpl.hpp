@@ -1139,8 +1139,6 @@ template<class P, class F> inline Void _ifma(TaylorModel<P,F>& r, const TaylorMo
 
 template<class P> inline Void _ifma(TaylorModel<P,FloatDP>& r, const TaylorModel<P,FloatDP>& x, const TaylorModel<P,FloatDP>& y)
 {
-    ARIADNE_LOG_SCOPE_CREATE;
-
     using CoefficientType = typename TaylorModel<P,FloatDP>::CoefficientType;
     using ErrorType = typename TaylorModel<P,FloatDP>::ErrorType;
 
@@ -1221,7 +1219,7 @@ template<class P> inline Void _ifma(TaylorModel<P,FloatDP>& r, const TaylorModel
             }
             if (ya_len > 0 && y_size > 0 && ya_len*y_size < 1024 && ya_len < 1024 && y_size < 1024) {
                 ariadne_cuda::_ifma(x_index_vector, x_value, x_value_neg, y_index_matrix, y_value_vector, int(ya_len), int(y_size), error);
-
+                
                 for (uint i = 0; i < y_size; i++) {
                     MultiIndex temp(ya_len);
                     FloatDP s(error[i]);
