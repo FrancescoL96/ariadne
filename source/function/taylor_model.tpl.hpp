@@ -26,10 +26,7 @@
 
 #include <iomanip>
 #include <limits>
-#include <vector>
-#include <typeinfo>
 
-#include <chrono>
 #include "../cuda/cuda_lib.hpp"
 
 #include "../numeric/rounding.hpp"
@@ -1142,23 +1139,7 @@ template<class P, class F> inline Void _ifma(TaylorModel<P,F>& r, const TaylorMo
 
 template<class P> inline Void _ifma(TaylorModel<P,FloatDP>& r, const TaylorModel<P,FloatDP>& x, const TaylorModel<P,FloatDP>& y)
 {
-    std::chrono::_V2::system_clock::time_point for_cycle_start, str_grb_start, while_1_cycle_start, cuda_conversion_start, while_2_cycle_start, while_3_cycle_start, rnd_grb_cycle_start, sweep_start, expansion_start, clear_start;
-    std::chrono::_V2::system_clock::time_point for_cycle_stop, str_grb_stop, while_1_cycle_stop, cuda_conversion_stop, while_2_cycle_stop, while_3_cycle_stop, rnd_grb_cycle_stop, sweep_stop, expansion_stop, clear_stop;
-
-    auto start = std::chrono::high_resolution_clock::now(); 
-    auto stop = std::chrono::high_resolution_clock::now(); 
-
-    std::cout << "SECONDA FUNZIONE" << std::endl;
-
-    auto str_grb_duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
-    auto while_1_cycle_duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
-    auto cuda_conversion_duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    auto while_2_cycle_duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
-    auto while_3_cycle_duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
-    auto rnd_grb_cycle_duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
-    auto sweep_duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
-    auto expansion_duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
-    auto clear_duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start); 
+    ARIADNE_LOG_SCOPE_CREATE;
 
     using CoefficientType = typename TaylorModel<P,FloatDP>::CoefficientType;
     using ErrorType = typename TaylorModel<P,FloatDP>::ErrorType;
@@ -1169,102 +1150,104 @@ template<class P> inline Void _ifma(TaylorModel<P,FloatDP>& r, const TaylorModel
     CoefficientType tv(t.precision());
     ErrorType te=t.error();
 
-    for_cycle_start = std::chrono::high_resolution_clock::now(); 
     for(auto xiter=x.begin(); xiter!=x.end(); ++xiter) {
-
-        str_grb_start = std::chrono::high_resolution_clock::now(); 
         UniformConstReference<MultiIndex> xa=xiter->index();
         UniformConstReference<CoefficientType> xv=xiter->coefficient();
 
         auto riter = r.begin(); auto yiter=y.begin();
-        str_grb_stop = std::chrono::high_resolution_clock::now(); 
-        str_grb_duration += std::chrono::duration_cast<std::chrono::microseconds>(str_grb_stop - str_grb_start); 
-
-        while_1_cycle_start = std::chrono::high_resolution_clock::now();
-        #ifdef HAVE_CUDA_H
-            cuda_conversion_start = std::chrono::high_resolution_clock::now();
-
-            uint ra_len = uint(riter->index().size());
-            uint ya_len = uint(yiter->index().size());
-            std::vector < int *> r_index_vector;
-            std::vector < int *> y_index_vector;
-            std::vector < double > r_value_vector;
-            std::vector < double > y_value_vector;
-            while (riter!=r.end() && yiter!=y.end()) {
-                int* ra_arr = new int[ra_len];
-                int* ya_arr = new int[ya_len];
-
-                std::vector < int *> r_vector;
-                std::vector < int *> y_vector;
-
-                if (ra_len == ya_len) {
-                    for (uint i = 0; i < ra_len; i++) {
-                        ra_arr[i] = riter->index().get(i);
-                        ya_arr[i] = yiter->index().get(i);
-                    }
-                } else {
-                    for (uint i = 0; i < ra_len; i++) {
-                        ra_arr[i] = riter->index().get(i);
-                    }
-                    for (uint i = 0; i < ya_len; i++) {
-                        ya_arr[i] = yiter->index().get(i);
-                    }
-                }
-
-                r_index_vector.push_back(ra_arr);
-                y_index_vector.push_back(ya_arr);
-
-                auto rv = riter->coefficient();
-                auto yv = yiter->coefficient();
-
-                r_value_vector.push_back(rv.get_d());
-                y_value_vector.push_back(yv.get_d());
-                
-                ++riter;
-                ++yiter;
-            }
-            //ariadne_cuda::_ifma(r_index_vector, r_value_vector, int(ra_len), y_index_vector, y_value_vector, int(ya_len));
-            cuda_conversion_stop = std::chrono::high_resolution_clock::now();
-            cuda_conversion_duration += std::chrono::duration_cast<std::chrono::microseconds>(cuda_conversion_stop - cuda_conversion_start); 
-        #endif
+        uint y_counter = 0;
         while (riter!=r.end() && yiter!=y.end()) {
             auto ra=riter->index();
             auto rv=riter->coefficient();
             auto ya=yiter->index();
             auto yv=yiter->coefficient();
             ta = xa + ya;
-            /*std::cout << "ra: " << ra << std::endl;
-            std::cout << "ya: " << ya << std::endl;*/
             if (ra == ta) {
                 tv=fma_err(xv,yv,rv,te);
                 t._append(ta,tv);
-                ++riter; ++yiter;
+                ++riter; ++yiter; ++y_counter;
             } else if (ra < ta) {
                 t._append(ra,rv);
                 ++riter;
             } else { // ta<ra
                 tv=mul_err(xv,yv,te);
                 t._append(ta,tv);
-                ++yiter;
+                ++yiter; ++y_counter;
             }
-            /*std::cout << "ra: " << riter->index() << std::endl;
-            std::cout << "ya: " << yiter->index() << std::endl;
-            std::cout << "---" << std::endl;*/
         }
-        while_1_cycle_stop = std::chrono::high_resolution_clock::now(); 
-        while_1_cycle_duration += std::chrono::duration_cast<std::chrono::microseconds>(while_1_cycle_stop - while_1_cycle_start);
 
-        while_2_cycle_start = std::chrono::high_resolution_clock::now(); 
         while (riter!=r.end()) {
             auto ra=riter->index();
             auto rv=riter->coefficient();
             t._append(ra,rv);
             ++riter;
         }
-        while_2_cycle_stop = std::chrono::high_resolution_clock::now(); 
-        while_2_cycle_duration += std::chrono::duration_cast<std::chrono::microseconds>(while_2_cycle_stop - while_2_cycle_start); 
+        
+        #ifdef HAVE_CUDA_H            
+            uint xa_len = uint(xa.size());
+            uint ya_len = uint(yiter->index().size());
+            double *error = ariadne_cuda::mallocManagedDouble(int(ya_len));
 
-        while_3_cycle_start = std::chrono::high_resolution_clock::now(); 
+            const unsigned long y_size = y.number_of_terms() - y_counter;
+
+            int * x_index_vector;
+            int * y_index_matrix;
+            double x_value;
+            double x_value_neg;
+            double * y_value_vector;
+
+            x_index_vector = ariadne_cuda::mallocManagedInt(int(xa_len));
+            for (uint i = 0; i < xa_len; i++) {
+                x_index_vector[i] = xa.get(i);
+            }
+            x_value = xv.get_d();
+            x_value_neg = -xv.get_d();
+
+            if (y_size != 0) {
+                if (ya_len != 0) {
+                    y_index_matrix = ariadne_cuda::mallocManagedInt(int(ya_len*y_size));
+                }
+                y_value_vector = ariadne_cuda::mallocManagedDouble(int(y_size));
+            }
+
+            FloatDP error_new = te.raw();
+            uint k = 0;
+            while (yiter!=y.end()) {
+                for (uint i = 0; i < ya_len; i++) {
+                    y_index_matrix[k*ya_len+i] = yiter->index().get(i);
+                }
+                y_value_vector[k] = yiter->coefficient().get_d();
+                ++yiter; ++k;
+            }
+            if (ya_len > 0 && y_size > 0 && ya_len*y_size < 1024 && ya_len < 1024 && y_size < 1024) {
+                ariadne_cuda::_ifma(x_index_vector, x_value, x_value_neg, y_index_matrix, y_value_vector, int(ya_len), int(y_size), error);
+
+                for (uint i = 0; i < y_size; i++) {
+                    MultiIndex temp(ya_len);
+                    FloatDP s(error[i]);
+                    error_new += s;
+                    for (uint j = 0; j < ya_len; j++) {
+                        temp.set(j, y_index_matrix[i * ya_len + j]);
+                    }
+                    FloatDP val(y_value_vector[i]);
+                    Value<FloatDP> val_s(val);
+                    t._append(temp, val_s);
+                }
+
+                FloatDP error_new_fdp(error_new);
+                Error<FloatDP> te_cuda(error_new_fdp);
+                te = te_cuda;
+            } else {
+                while (yiter!=y.end()) {
+                    auto ya=yiter->index();
+                    auto yv=yiter->coefficient();
+                    ta = xa + ya;
+                    tv=mul_err(xv,yv,te);
+                    t._append(ta,tv);
+                    ++yiter;
+                }
+            }
+        #else
         while (yiter!=y.end()) {
             auto ya=yiter->index();
             auto yv=yiter->coefficient();
@@ -1273,34 +1256,16 @@ template<class P> inline Void _ifma(TaylorModel<P,FloatDP>& r, const TaylorModel
             t._append(ta,tv);
             ++yiter;
         }
-        while_3_cycle_stop = std::chrono::high_resolution_clock::now(); 
-        while_3_cycle_duration += std::chrono::duration_cast<std::chrono::microseconds>(while_3_cycle_stop - while_3_cycle_start); 
+        #endif
 
-        rnd_grb_cycle_start = std::chrono::high_resolution_clock::now(); 
         t.error()=te;
         te = 0u;
 
-        sweep_start = std::chrono::high_resolution_clock::now(); 
         t.sweep();
-        sweep_stop = std::chrono::high_resolution_clock::now(); 
-        sweep_duration += std::chrono::duration_cast<std::chrono::microseconds>(sweep_stop - sweep_start); 
-
-        expansion_start = std::chrono::high_resolution_clock::now(); 
         r.expansion().swap(t.expansion());
-        expansion_stop = std::chrono::high_resolution_clock::now(); 
-        expansion_duration += std::chrono::duration_cast<std::chrono::microseconds>(expansion_stop - expansion_start); 
-
         r.error()=t.error();
-
-        clear_start = std::chrono::high_resolution_clock::now(); 
         t.clear();
-        clear_stop = std::chrono::high_resolution_clock::now(); 
-        clear_duration += std::chrono::duration_cast<std::chrono::microseconds>(clear_stop - clear_start); 
-
-        rnd_grb_cycle_stop = std::chrono::high_resolution_clock::now(); 
-        rnd_grb_cycle_duration += std::chrono::duration_cast<std::chrono::microseconds>(rnd_grb_cycle_stop - rnd_grb_cycle_start); 
     }
-    for_cycle_stop = std::chrono::high_resolution_clock::now();
 
     ErrorType xs=nul(r.error());
     for(auto xiter=x.begin(); xiter!=x.end(); ++xiter) {
@@ -1317,20 +1282,6 @@ template<class P> inline Void _ifma(TaylorModel<P,FloatDP>& r, const TaylorModel
     const ErrorType& ye=y.error();
     re+=xe*ye;
     re+=xs*ye+ys*xe;
-
-    std::chrono::microseconds for_cycle_duration = std::chrono::duration_cast<std::chrono::microseconds>(for_cycle_stop - for_cycle_start); 
-
-    std::cout << "for: " << for_cycle_duration.count() << std::endl;
-    std::cout << "str_grb: " << str_grb_duration.count() << std::endl;
-    std::cout << "while_1: " << while_1_cycle_duration.count() << std::endl;
-    std::cout << "cuda conversion: " << cuda_conversion_duration.count() << std::endl;
-    std::cout << "while_2: " << while_2_cycle_duration.count() << std::endl;
-    std::cout << "while_3: " << while_3_cycle_duration.count() << std::endl;
-    std::cout << "rnd_grb: " << rnd_grb_cycle_duration.count() << std::endl;
-    std::cout << "sweep: " << sweep_duration.count() << std::endl;
-    std::cout << "expansion: " << expansion_duration.count() << std::endl;
-    std::cout << "clear: " << clear_duration.count() << std::endl;
-    std::cout << "---------------------------------------------" << std::endl;
 }
 
 template<class P, class F> inline TaylorModel<P,F> _fma(const TaylorModel<P,F>& x, const TaylorModel<P,F>& y, TaylorModel<P,F> z) {

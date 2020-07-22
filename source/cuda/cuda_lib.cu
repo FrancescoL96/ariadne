@@ -193,7 +193,49 @@ double ariadne_cuda::double_approximation (double first_value, double second_val
     return * res_h;
 }
 
-void ariadne_cuda::_ifma(std::vector < int* >& r_index_vector, std::vector < double >& r_value_vecto, int r_size, 
-    std::vector < int* >& y_index_vector, std::vector < double >& y_value_vecto, int y_size) {
-    return;
+double * ariadne_cuda::mallocManagedDouble(int size) {
+    double * var;
+    SAFE_CALL(cudaMallocManaged(&var, size * sizeof(double)));
+    for (int i = 0; i < size; i++) {
+        var[i] = double(0);
+    }
+    return var;
+}
+
+int * ariadne_cuda::mallocManagedInt(int size) {
+    int * var;
+    SAFE_CALL(cudaMallocManaged(&var, size * sizeof(int)));
+    for (int i = 0; i < size; i++) {
+        var[i] = int(0);
+    }
+    return var;
+}
+
+__global__
+void sum_index (int * x_index_vector, int * y_index_matrix, int ya_len, int y_size) {
+    int row = blockIdx.y*blockDim.y + threadIdx.y;
+    int col = blockIdx.x*blockDim.x + threadIdx.x;
+    y_index_matrix[row * y_size + col] += x_index_vector[col];
+}
+
+/* Note:
+ * This kernel is not implemented in the most efficient way possible, local variables should be omitted
+ */
+__global__
+void mul_value (double x_value, double x_value_neg, double * y_value_vector, int y_size, double * error) {
+    int col = blockIdx.x*blockDim.x + threadIdx.x;
+    double u = __dmul_ru(y_value_vector[col], x_value);
+    double ml = __dmul_ru(y_value_vector[col], x_value_neg);
+    double add = __dadd_ru(u, ml);
+    double two = 2.0;
+    error[col] = __ddiv_ru(add, two);
+    y_value_vector[col] = __dmul_rn(y_value_vector[col], x_value);
+}
+
+void ariadne_cuda::_ifma(int *x_index_vector, double x_value, double x_value_neg, 
+    int *y_index_matrix, double *y_value_vector, int ya_len, int y_size, double * error)
+{
+    sum_index <<< ya_len, y_size >>> (x_index_vector, y_index_matrix, ya_len, y_size);
+    mul_value <<< 1, y_size >>> (x_value, x_value_neg, y_value_vector, y_size, error);
+    CHECK_CUDA_ERROR
 }
