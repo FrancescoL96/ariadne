@@ -1235,6 +1235,15 @@ template<class P> inline Void _ifma(TaylorModel<P,FloatDP>& r, const TaylorModel
                 FloatDP error_new_fdp(error_new);
                 Error<FloatDP> te_cuda(error_new_fdp);
                 te = te_cuda;
+
+                ariadne_cuda::free(x_index_vector);
+                ariadne_cuda::free(error);
+                if (y_size != 0) {
+                    if (ya_len != 0) {
+                        ariadne_cuda::free(y_index_matrix);
+                    }
+                    ariadne_cuda::free(y_value_vector);
+                }
             } else {
                 while (yiter!=y.end()) {
                     auto ya=yiter->index();

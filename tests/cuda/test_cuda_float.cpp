@@ -67,7 +67,6 @@ Void TestCudaFloat::test_cuda_rounding()
 {   
 
   volatile double one   = 1;
-  volatile double two  = 2;
   volatile double three = 3;
   volatile double five  = 5;
 

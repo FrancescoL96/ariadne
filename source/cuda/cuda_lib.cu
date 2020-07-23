@@ -211,6 +211,10 @@ int * ariadne_cuda::mallocManagedInt(int size) {
     return var;
 }
 
+void ariadne_cuda::free(void* address) {
+    SAFE_CALL(cudaFree(address));
+}
+
 __global__
 void sum_index (int * x_index_vector, int * y_index_matrix, int ya_len, int y_size) {
     int row = blockIdx.y*blockDim.y + threadIdx.y;
